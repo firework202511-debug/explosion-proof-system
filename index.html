@@ -452,12 +452,11 @@
           <label>組別 <span class="req">*</span></label>
           <select id="group" onchange="updateUnit()">
             <option value="">── 請選擇組別 ──</option>
-            <option value="生產一組">生產一組</option>
-            <option value="生產二組">生產二組</option>
-            <option value="維修組">維修組</option>
-            <option value="安全環保組">安全環保組</option>
-            <option value="工務組">工務組</option>
-            <option value="品管組">品管組</option>
+            <option value="電氣一組">電氣一組</option>
+            <option value="儀資一組">儀資一組</option>
+            <option value="儀資二組">儀資二組</option>
+            <option value="修配組">修配組</option>
+            <option value="鍋爐組">鍋爐組</option>
           </select>
           <div class="err-msg">請選擇組別</div>
         </div>
@@ -640,12 +639,11 @@ const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwVOvf_-PbUNTg
 // 課別對應
 // ─────────────────────────────────────────────
 const DEPT_MAP = {
-  "生產一組": ["第一課","第二課","第三課"],
-  "生產二組": ["第四課","第五課","第六課"],
-  "維修組":   ["機械課","電儀課","管線課"],
-  "安全環保組":["安全課","環保課"],
-  "工務組":   ["工程課","設施課"],
-  "品管組":   ["檢驗課","品保課"],
+  "電氣一組": ["第一課","第二課","第三課"],
+  "儀資一組": ["第四課","第五課","第六課"],
+  "儀資二組":   ["機械課","電儀課","管線課"],
+  "修配組":["安全課","環保課"],
+  "鍋爐組":   ["工程課","設施課"],
 };
 
 function updateUnit() {
