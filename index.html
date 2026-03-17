@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>防爆電氣設備報備系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #2a3a55;
+    --accent: #f59e0b;
+    --accent2: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --grid-line: rgba(245,158,11,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0f1a2e 0%, #1a2845 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 32px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 30px rgba(245,158,11,0.15);
+  }
+  .header-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 10px rgba(245,158,11,0.4); }
+    50% { box-shadow: 0 0 25px rgba(245,158,11,0.8); }
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-title {
+    font-size: 16px; font-weight: 700; color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .logo-sub {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .header-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    border: 1px solid rgba(245,158,11,0.3);
+    padding: 4px 12px; border-radius: 2px;
+    letter-spacing: 1px;
+    background: rgba(245,158,11,0.05);
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── PAGE TITLE ── */
+  .page-title {
+    text-align: center; margin-bottom: 40px;
+  }
+  .page-title h1 {
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 900; letter-spacing: 4px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .page-title p {
+    color: var(--text-muted); font-size: 13px; letter-spacing: 2px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* ── PENDING RECORDS ── */
+  #pending-section {
+    display: none;
+    margin-bottom: 32px;
+  }
+  .pending-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .pending-label {
+    font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pending-count {
+    background: var(--accent); color: #000;
+    font-size: 11px; font-weight: 900;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .pending-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .pending-card {
+    background: var(--surface2);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 4px;
+    animation: slide-in 0.3s ease;
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pending-info { font-size: 13px; color: var(--text); }
+  .pending-info span { color: var(--text-muted); margin: 0 6px; }
+  .pending-remove {
+    background: none; border: none; color: var(--danger);
+    cursor: pointer; font-size: 18px; padding: 4px 8px;
+    opacity: 0.6; transition: opacity 0.2s;
+  }
+  .pending-remove:hover { opacity: 1; }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .form-section {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 36px;
+  }
+  .form-section:last-child { border-bottom: none; }
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::before {
+    content: '';
+    width: 4px; height: 14px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  /* ── FORM FIELDS ── */
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-bottom: 20px;
+  }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 640px) {
+    .form-row, .form-row.three { grid-template-columns: 1fr; }
+    .form-section { padding: 22px 20px; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label {
+    font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+  .field label .req {
+    color: var(--danger); margin-left: 3px;
+  }
+  .field input, .field select, .field textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-size: 14px; font-family: 'Noto Sans TC', sans-serif;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f59e0b' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+  }
+  .field input::placeholder { color: var(--text-muted); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field input.error, .field select.error { border-color: var(--danger) !important; }
+  .field .err-msg {
+    font-size: 11px; color: var(--danger);
+    display: none;
+  }
+  .field.has-error .err-msg { display: block; }
+
+  /* ── RADIO / CHECKBOX ── */
+  .radio-group, .check-group {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 4px 0;
+  }
+  .radio-opt {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .radio-opt input[type="radio"],
+  .radio-opt input[type="checkbox"] { display: none; }
+  .radio-pill {
+    padding: 9px 22px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .radio-opt input:checked + .radio-pill {
+    border-color: var(--accent);
+    background: rgba(245,158,11,0.12);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── FILE UPLOAD ── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 6px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(245,158,11,0.04);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+  }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-label {
+    font-size: 13px; color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .upload-label strong { color: var(--accent); }
+  .upload-preview {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;
+  }
+  .preview-item {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .preview-item.image img {
+    width: 60px; height: 60px; object-fit: cover; border-radius: 3px;
+  }
+  .preview-remove {
+    background: none; border: none; color: var(--danger);
+    cursor: pointer; font-size: 14px; padding: 0 2px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 28px 36px;
+    background: rgba(245,158,11,0.03);
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 13px 28px;
+    font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    border: none; cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    font-family: 'Noto Sans TC', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent); color: #000;
+  }
+  .btn-primary:hover {
+    background: #fbbf24;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .btn-secondary:hover {
+    background: rgba(245,158,11,0.1);
+  }
+  .btn-success {
+    background: var(--success); color: #000;
+  }
+  .btn-success:hover {
+    background: #34d399;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+    transform: translateY(-1px);
+  }
+  .btn-danger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-danger:hover {
+    border-color: var(--danger); color: var(--danger);
+  }
+  .btn:disabled {
+    opacity: 0.4; cursor: not-allowed; transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* ── STATUS BAR ── */
+  #status-bar {
+    display: none;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-size: 13px; letter-spacing: 1px;
+    z-index: 999;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  #status-bar.show { opacity: 1; pointer-events: auto; }
+  #status-bar.success { border-color: var(--success); color: var(--success); }
+  #status-bar.error-bar { border-color: var(--danger); color: var(--danger); }
+  #status-bar.info { border-color: var(--accent); color: var(--accent); }
+
+  /* ── OVERLAY SPINNER ── */
+  #overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,14,26,0.8);
+    z-index: 500;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  #overlay.show { display: flex; }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid rgba(245,158,11,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay-text {
+    font-size: 13px; color: var(--accent); letter-spacing: 2px;
+  }
+
+  /* ── RECORD NUMBER ── */
+  .record-no {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; color: var(--text-muted);
+    text-align: right; margin-bottom: 8px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 24px;
+    font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">
+        <div class="logo-title">防爆電氣設備報備系統</div>
+        <div class="logo-sub">EXPLOSION-PROOF EQUIPMENT DECLARATION</div>
+      </div>
+    </div>
+    <div class="header-badge">ZONE CLASSIFICATION COMPLIANCE</div>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h1>防爆電氣設備申報表</h1>
+    <p>請依實際設備狀況如實填寫，帶 <span style="color:#ef4444">*</span> 為必填欄位</p>
+  </div>
+
+  <!-- 暫存筆數區 -->
+  <div id="pending-section">
+    <div class="pending-header">
+      <div class="pending-label">
+        ⏳ 暫存資料
+        <span class="pending-count" id="pending-count">0</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted)">完成所有筆數後，請點選「送出全部」</div>
+    </div>
+    <div class="pending-list" id="pending-list"></div>
+  </div>
+
+  <!-- 表單 -->
+  <div class="form-card">
+    <div class="record-no" style="padding:12px 36px 0;">
+      <span id="record-label">第 1 筆</span>
+    </div>
+
+    <!-- 1. 單位 -->
+    <div class="form-section">
+      <div class="section-title">01 · 申報單位</div>
+      <div class="form-row">
+        <div class="field" id="f-group">
+          <label>組別 <span class="req">*</span></label>
+          <select id="group" onchange="updateUnit()">
+            <option value="">── 請選擇組別 ──</option>
+            <option value="生產一組">生產一組</option>
+            <option value="生產二組">生產二組</option>
+            <option value="維修組">維修組</option>
+            <option value="安全環保組">安全環保組</option>
+            <option value="工務組">工務組</option>
+            <option value="品管組">品管組</option>
+          </select>
+          <div class="err-msg">請選擇組別</div>
+        </div>
+        <div class="field" id="f-dept">
+          <label>課別 <span class="req">*</span></label>
+          <select id="dept" disabled>
+            <option value="">── 請先選擇組別 ──</option>
+          </select>
+          <div class="err-msg">請選擇課別</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 設備區域 -->
+    <div class="form-section">
+      <div class="section-title">02 · 設備區域</div>
+      <div class="form-row full">
+        <div class="field" id="f-area">
+          <label>設備區域 <span class="req">*</span></label>
+          <select id="area">
+            <option value="">── 請選擇設備區域 ──</option>
+            <option value="Zone 0（連續危險區）">Zone 0（連續危險區）</option>
+            <option value="Zone 1（一般危險區）">Zone 1（一般危險區）</option>
+            <option value="Zone 2（非正常危險區）">Zone 2（非正常危險區）</option>
+            <option value="Zone 20（粉塵連續危險區）">Zone 20（粉塵連續危險區）</option>
+            <option value="Zone 21（粉塵一般危險區）">Zone 21（粉塵一般危險區）</option>
+            <option value="Zone 22（粉塵非正常危險區）">Zone 22（粉塵非正常危險區）</option>
+            <option value="一般區域（非危險區）">一般區域（非危險區）</option>
+          </select>
+          <div class="err-msg">請選擇設備區域</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 設備名稱 -->
+    <div class="form-section">
+      <div class="section-title">03 · 設備名稱</div>
+      <div class="form-row full">
+        <div class="field" id="f-equip">
+          <label>設備名稱 <span class="req">*</span></label>
+          <input type="text" id="equip" placeholder="請輸入設備名稱（如：防爆型馬達、防爆接線盒…）">
+          <div class="err-msg">請輸入設備名稱</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 購置年度 -->
+    <div class="form-section">
+      <div class="section-title">04 · 購置年度確認</div>
+      <div class="form-row full">
+        <div class="field" id="f-year">
+          <label>設備是否於民國 104 年以後購置？ <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="year" value="是">
+              <span class="radio-pill">✓ 是（104年後購置）</span>
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="year" value="否">
+              <span class="radio-pill">✗ 否（104年前購置）</span>
+            </label>
+          </div>
+          <div class="err-msg">請選擇購置年度</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 法令要求 -->
+    <div class="form-section">
+      <div class="section-title">05 · 法令符合性</div>
+      <div class="form-row full">
+        <div class="field" id="f-law">
+          <label>設備是否符合區劃等級法令要求？ <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="law" value="符合">
+              <span class="radio-pill">✓ 符合</span>
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="law" value="不符合">
+              <span class="radio-pill">✗ 不符合</span>
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="law" value="待確認">
+              <span class="radio-pill">⚠ 待確認</span>
+            </label>
+          </div>
+          <div class="err-msg">請選擇法令符合性</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 設備照片 -->
+    <div class="form-section">
+      <div class="section-title">06 · 設備現場照片</div>
+      <div class="form-row full">
+        <div class="field" id="f-photo">
+          <label>請上傳設備現場照片 <span class="req">*</span></label>
+          <div class="upload-zone" id="photo-zone"
+               ondragover="handleDrag(event,'photo-zone')"
+               ondragleave="removeDrag('photo-zone')"
+               ondrop="handleDrop(event,'photo','photo-zone')">
+            <input type="file" id="photo" accept="image/*" multiple
+                   onchange="handleFiles(this,'photo')">
+            <div class="upload-icon">📷</div>
+            <div class="upload-label">
+              <strong>點選或拖曳</strong> 上傳照片<br>
+              支援 JPG / PNG / WEBP，可多張上傳
+            </div>
+          </div>
+          <div class="upload-preview" id="photo-preview"></div>
+          <div class="err-msg">請上傳至少一張設備現場照片</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. 認證文件 -->
+    <div class="form-section">
+      <div class="section-title">07 · 認證文件</div>
+      <div class="form-row full">
+        <div class="field" id="f-cert">
+          <label>請上傳設備 TS 認證證明或其他證明文件 <span class="req">*</span></label>
+          <div class="upload-zone" id="cert-zone"
+               ondragover="handleDrag(event,'cert-zone')"
+               ondragleave="removeDrag('cert-zone')"
+               ondrop="handleDrop(event,'cert','cert-zone')">
+            <input type="file" id="cert" accept=".pdf,.jpg,.png,.jpeg,.webp,.doc,.docx" multiple
+                   onchange="handleFiles(this,'cert')">
+            <div class="upload-icon">📄</div>
+            <div class="upload-label">
+              <strong>點選或拖曳</strong> 上傳文件<br>
+              支援 PDF / 圖片 / Word
+            </div>
+          </div>
+          <div class="upload-preview" id="cert-preview"></div>
+          <div class="err-msg">請上傳認證證明文件</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 備註 -->
+    <div class="form-section">
+      <div class="section-title">08 · 備註（選填）</div>
+      <div class="form-row full">
+        <div class="field">
+          <label>備註說明</label>
+          <textarea id="note" placeholder="如有需要補充說明，請在此填寫…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 按鈕列 -->
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="keepAndContinue()">
+        ➕ 繼續填寫（暫存本筆）
+      </button>
+      <button class="btn btn-primary" onclick="submitAll()" id="submit-btn">
+        ✈ 送出全部資料
+      </button>
+      <button class="btn btn-success" onclick="exportPDF()" id="export-btn" style="display:none">
+        ⬇ 資料匯出（PDF）
+      </button>
+      <button class="btn btn-danger" onclick="clearForm()">
+        ↺ 清除本筆
+      </button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 防爆電氣設備報備系統 ｜ Powered by Cloudflare Pages + Google Sheets
+</footer>
+
+<!-- Overlay -->
+<div id="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-text" id="overlay-text">資料傳送中…</div>
+</div>
+
+<!-- Status Bar -->
+<div id="status-bar"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// ⚙ 設定：填入你的 Google Apps Script Web App URL
+// ─────────────────────────────────────────────
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwVOvf_-PbUNTgOVLf3vOIc1HrG-ACPRD_BGcqFy_22Bva-SQI4W-CzanoJY3ckcXDUCQ/exec";
+
+// ─────────────────────────────────────────────
+// 課別對應
+// ─────────────────────────────────────────────
+const DEPT_MAP = {
+  "生產一組": ["第一課","第二課","第三課"],
+  "生產二組": ["第四課","第五課","第六課"],
+  "維修組":   ["機械課","電儀課","管線課"],
+  "安全環保組":["安全課","環保課"],
+  "工務組":   ["工程課","設施課"],
+  "品管組":   ["檢驗課","品保課"],
+};
+
+function updateUnit() {
+  const g = document.getElementById('group').value;
+  const d = document.getElementById('dept');
+  d.innerHTML = '<option value="">── 請選擇課別 ──</option>';
+  if (g && DEPT_MAP[g]) {
+    DEPT_MAP[g].forEach(dept => {
+      d.innerHTML += `<option value="${dept}">${dept}</option>`;
+    });
+    d.disabled = false;
+  } else {
+    d.disabled = true;
+  }
+}
+
+// ─────────────────────────────────────────────
+// 檔案管理
+// ─────────────────────────────────────────────
+const fileStore = { photo: [], cert: [] };
+
+function handleFiles(input, type) {
+  Array.from(input.files).forEach(f => addFile(f, type));
+  input.value = '';
+}
+
+function addFile(file, type) {
+  const id = Date.now() + Math.random();
+  fileStore[type].push({ id, file });
+  renderPreview(type);
+}
+
+function removeFile(id, type) {
+  fileStore[type] = fileStore[type].filter(f => f.id != id);
+  renderPreview(type);
+}
+
+function renderPreview(type) {
+  const container = document.getElementById(type + '-preview');
+  container.innerHTML = '';
+  fileStore[type].forEach(({ id, file }) => {
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    if (file.type.startsWith('image/')) {
+      item.classList.add('image');
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      item.appendChild(img);
+    }
+    const name = document.createElement('span');
+    name.textContent = file.name;
+    const btn = document.createElement('button');
+    btn.className = 'preview-remove'; btn.textContent = '✕';
+    btn.onclick = () => removeFile(id, type);
+    item.appendChild(name); item.appendChild(btn);
+    container.appendChild(item);
+  });
+}
+
+function handleDrag(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.add('drag-over');
+}
+function removeDrag(zoneId) {
+  document.getElementById(zoneId).classList.remove('drag-over');
+}
+function handleDrop(e, type, zoneId) {
+  e.preventDefault();
+  removeDrag(zoneId);
+  Array.from(e.dataTransfer.files).forEach(f => addFile(f, type));
+}
+
+// ─────────────────────────────────────────────
+// 驗證
+// ─────────────────────────────────────────────
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '';
+}
+
+function validate() {
+  let ok = true;
+  const checks = [
+    { id: 'f-group', val: () => document.getElementById('group').value, msg: '請選擇組別' },
+    { id: 'f-dept',  val: () => document.getElementById('dept').value,  msg: '請選擇課別' },
+    { id: 'f-area',  val: () => document.getElementById('area').value,  msg: '請選擇設備區域' },
+    { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
+    { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
+    { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
+    { id: 'f-photo', val: () => fileStore.photo.length > 0 ? 'ok' : '', msg: '請上傳設備現場照片' },
+    { id: 'f-cert',  val: () => fileStore.cert.length > 0  ? 'ok' : '', msg: '請上傳認證文件' },
+  ];
+  checks.forEach(c => {
+    const wrap = document.getElementById(c.id);
+    if (!c.val()) {
+      wrap.classList.add('has-error');
+      ok = false;
+    } else {
+      wrap.classList.remove('has-error');
+    }
+  });
+  return ok;
+}
+
+// ─────────────────────────────────────────────
+// 收集目前表單資料
+// ─────────────────────────────────────────────
+function collectForm() {
+  return {
+    group:  document.getElementById('group').value,
+    dept:   document.getElementById('dept').value,
+    area:   document.getElementById('area').value,
+    equip:  document.getElementById('equip').value.trim(),
+    year:   getRadio('year'),
+    law:    getRadio('law'),
+    note:   document.getElementById('note').value.trim(),
+    photos: fileStore.photo.map(f => f.file.name).join('、'),
+    certs:  fileStore.cert.map(f => f.file.name).join('、'),
+    ts:     new Date().toLocaleString('zh-TW'),
+  };
+}
+
+// ─────────────────────────────────────────────
+// 暫存筆數
+// ─────────────────────────────────────────────
+let pendingRecords = [];
+
+function keepAndContinue() {
+  if (!validate()) {
+    showStatus('請完整填寫必填欄位後再繼續', 'error-bar');
+    return;
+  }
+  const data = collectForm();
+  data.photoFiles = [...fileStore.photo];
+  data.certFiles  = [...fileStore.cert];
+  pendingRecords.push(data);
+  renderPending();
+  clearForm();
+  showStatus(`第 ${pendingRecords.length} 筆已暫存，請繼續填寫下一筆`, 'info');
+  updateRecordLabel();
+}
+
+function renderPending() {
+  const section = document.getElementById('pending-section');
+  const list    = document.getElementById('pending-list');
+  const count   = document.getElementById('pending-count');
+  section.style.display = pendingRecords.length ? 'block' : 'none';
+  count.textContent = pendingRecords.length;
+  list.innerHTML = '';
+  pendingRecords.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'pending-card';
+    card.innerHTML = `
+      <div class="pending-info">
+        <strong style="color:var(--accent)">#${i+1}</strong>
+        <span>·</span>${r.group} ${r.dept}
+        <span>·</span>${r.area}
+        <span>·</span>${r.equip}
+        <span style="color:var(--text-muted);font-size:11px;margin-left:8px">${r.ts}</span>
+      </div>
+      <button class="pending-remove" onclick="removePending(${i})">✕</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function removePending(i) {
+  pendingRecords.splice(i, 1);
+  renderPending();
+  updateRecordLabel();
+}
+
+function updateRecordLabel() {
+  document.getElementById('record-label').textContent =
+    `第 ${pendingRecords.length + 1} 筆`;
+}
+
+// ─────────────────────────────────────────────
+// 送出全部
+// ─────────────────────────────────────────────
+async function submitAll() {
+  if (!validate()) {
+    showStatus('請完整填寫必填欄位', 'error-bar');
+    return;
+  }
+  const current = collectForm();
+  current.photoFiles = [...fileStore.photo];
+  current.certFiles  = [...fileStore.cert];
+  const allRecords = [...pendingRecords, current];
+
+  showOverlay('資料傳送中，請稍候…');
+
+  try {
+    // 轉換檔案為 Base64
+    const payload = await Promise.all(allRecords.map(async (r, idx) => {
+      const photoB64 = await Promise.all((r.photoFiles || []).map(f => toBase64(f.file)));
+      const certB64  = await Promise.all((r.certFiles  || []).map(f => toBase64(f.file)));
+      return {
+        序號: idx + 1,
+        組別: r.group, 課別: r.dept,
+        設備區域: r.area, 設備名稱: r.equip,
+        104年後購置: r.year, 符合法令: r.law,
+        備註: r.note, 申報時間: r.ts,
+        照片檔名: r.photos, 文件檔名: r.certs,
+        photos: photoB64, certs: certB64,
+      };
+    }));
+
+    const res = await fetch(GOOGLE_SHEET_URL, {
+      method: 'POST',
+      body: JSON.stringify({ records: payload }),
+    });
+    const json = await res.json().catch(() => ({}));
+
+    hideOverlay();
+    if (json.result === 'success' || res.ok) {
+      showStatus(`✅ 已成功送出 ${allRecords.length} 筆資料！`, 'success');
+      // 保留資料供 PDF 匯出
+      window._exportData = allRecords;
+      pendingRecords = [];
+      renderPending();
+      clearForm();
+      document.getElementById('export-btn').style.display = 'flex';
+    } else {
+      throw new Error(json.error || '送出失敗');
+    }
+  } catch (err) {
+    hideOverlay();
+    showStatus('⚠ 連線失敗，請確認 Google Sheet 設定：' + err.message, 'error-bar');
+    // 即使送出失敗仍允許 PDF 匯出
+    window._exportData = allRecords;
+    document.getElementById('export-btn').style.display = 'flex';
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ─────────────────────────────────────────────
+// PDF 匯出
+// ─────────────────────────────────────────────
+async function exportPDF() {
+  const data = window._exportData;
+  if (!data || !data.length) {
+    showStatus('尚無可匯出的資料', 'error-bar'); return;
+  }
+
+  showOverlay('產生 PDF 中…');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // 嵌入字型備案：使用 Base64 NotoSansTC 或用 default
+  // 因 jsPDF 預設不支援中文，改用圖片模式 workaround：先在 canvas 繪製
+
+  const pageW = 210; const margin = 14;
+
+  for (let i = 0; i < data.length; i++) {
+    const r = data[i];
+    if (i > 0) doc.addPage();
+
+    // 標題
+    doc.setFillColor(15, 26, 46);
+    doc.rect(0, 0, pageW, 20, 'F');
+    doc.setTextColor(245, 158, 11);
+    doc.setFontSize(13);
+    doc.text('Explosion-Proof Equipment Declaration', pageW / 2, 9, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(180, 180, 180);
+    doc.text('防爆電氣設備申報表', pageW / 2, 16, { align: 'center' });
+
+    let y = 28;
+    doc.setTextColor(30, 30, 30);
+
+    const fields = [
+      ['Record No.',    `#${r.序號}`],
+      ['Unit / Dept.',  `${r.組別} ${r.課別}`],
+      ['Equipment Zone', r.設備區域],
+      ['Equipment Name', r.設備名稱],
+      ['Purchased After 2015?', r['104年後購置']],
+      ['Zone Classification Compliance', r.符合法令],
+      ['Photo Files',   r.照片檔名 || '（未提供）'],
+      ['Cert Files',    r.文件檔名 || '（未提供）'],
+      ['Notes',         r.備註 || '—'],
+      ['Submission Time', r.申報時間],
+    ];
+
+    doc.autoTable({
+      startY: y,
+      head: [['欄位 Field', '內容 Content']],
+      body: fields,
+      margin: { left: margin, right: margin },
+      headStyles: {
+        fillColor: [245, 158, 11], textColor: [0, 0, 0], fontStyle: 'bold',
+      },
+      alternateRowStyles: { fillColor: [248, 249, 252] },
+      styles: { fontSize: 10, cellPadding: 4 },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 65 }, 1: { cellWidth: 'auto' } },
+    });
+
+    // 照片預覽（最多 3 張）
+    const photos = r.photoFiles || [];
+    if (photos.length > 0) {
+      let imgY = doc.lastAutoTable.finalY + 8;
+      doc.setFontSize(9); doc.setTextColor(100);
+      doc.text('設備現場照片 On-site Photos:', margin, imgY);
+      imgY += 5;
+      let imgX = margin;
+      for (let p = 0; p < Math.min(photos.length, 3); p++) {
+        try {
+          const b64 = await toBase64(photos[p].file);
+          const ext = photos[p].file.type.includes('png') ? 'PNG' : 'JPEG';
+          doc.addImage('data:' + photos[p].file.type + ';base64,' + b64, ext, imgX, imgY, 50, 38);
+          imgX += 54;
+        } catch (_) {}
+      }
+    }
+
+    // 頁碼
+    const total = data.length;
+    doc.setFontSize(8); doc.setTextColor(160);
+    doc.text(`Page ${i + 1} / ${total}  |  ${new Date().toLocaleDateString('zh-TW')}`,
+             pageW - margin, 293, { align: 'right' });
+  }
+
+  hideOverlay();
+  doc.save(`防爆電氣設備申報表_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.pdf`);
+  showStatus('✅ PDF 已下載', 'success');
+}
+
+// ─────────────────────────────────────────────
+// 清除表單
+// ─────────────────────────────────────────────
+function clearForm() {
+  ['group','dept','area','equip','note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName === 'SELECT') el.value = '';
+    else el.value = '';
+  });
+  document.getElementById('dept').disabled = true;
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+  fileStore.photo = []; fileStore.cert = [];
+  renderPreview('photo'); renderPreview('cert');
+  ['f-group','f-dept','f-area','f-equip','f-year','f-law','f-photo','f-cert']
+    .forEach(id => document.getElementById(id).classList.remove('has-error'));
+}
+
+// ─────────────────────────────────────────────
+// UI 工具
+// ─────────────────────────────────────────────
+function showOverlay(txt) {
+  document.getElementById('overlay-text').textContent = txt;
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+let statusTimer;
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg;
+  bar.className = 'show ' + type;
+  bar.style.display = 'flex';
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => bar.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>
