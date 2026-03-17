@@ -894,91 +894,93 @@ function toBase64(file) {
 // ─────────────────────────────────────────────
 // PDF 匯出
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// PDF 匯出 (改用原生瀏覽器列印，完美解決中文亂碼)
+// ─────────────────────────────────────────────
 async function exportPDF() {
   const data = window._exportData;
   if (!data || !data.length) {
     showStatus('尚無可匯出的資料', 'error-bar'); return;
   }
 
-  showOverlay('產生 PDF 中…');
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  // 嵌入字型備案：使用 Base64 NotoSansTC 或用 default
-  // 因 jsPDF 預設不支援中文，改用圖片模式 workaround：先在 canvas 繪製
+  showOverlay('產生報表中…');
 
-  const pageW = 210;
-  const margin = 14;
+  // 建立報表的 HTML 排版
+  let html = `
+  <!DOCTYPE html>
+  <html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8">
+    <title>防爆電氣設備申報表_匯出</title>
+    <style>
+      body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 40px; color: #111; line-height: 1.5; }
+      .header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid #f59e0b; padding-bottom: 15px; }
+      .header h1 { margin: 0; color: #1a2845; font-size: 28px; letter-spacing: 2px; }
+      .header p { margin: 8px 0 0 0; color: #666; font-size: 14px; font-family: monospace; }
+      .record { page-break-inside: avoid; margin-bottom: 50px; background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+      .record-title { font-size: 18px; color: #f59e0b; font-weight: bold; margin-top: 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      th, td { border: 1px solid #cbd5e1; padding: 12px; font-size: 14px; text-align: left; }
+      th { background-color: #f8fafc; width: 30%; color: #334155; }
+      .img-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+      .img-container img { height: 120px; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>防爆電氣設備申報表</h1>
+      <p>Explosion-Proof Equipment Declaration Report</p>
+      <p style="color:#999; font-size:12px;">匯出時間：${new Date().toLocaleString('zh-TW')}</p>
+    </div>
+  `;
 
   for (let i = 0; i < data.length; i++) {
     const r = data[i];
-    if (i > 0) doc.addPage();
+    html += `
+    <div class="record">
+      <h3 class="record-title">紀錄編號 #${i + 1}</h3>
+      <table>
+        <tr><th>申報單位 (Unit/Dept)</th><td>${r.group} - ${r.dept}</td></tr>
+        <tr><th>設備區域 (Zone)</th><td>${r.area}</td></tr>
+        <tr><th>設備名稱 (Equipment)</th><td>${r.equip}</td></tr>
+        <tr><th>104年後購置 (After 2015)</th><td>${r.year}</td></tr>
+        <tr><th>法令符合性 (Compliance)</th><td>${r.law}</td></tr>
+        <tr><th>現場照片檔名 (Photos)</th><td>${r.photos || '（未提供）'}</td></tr>
+        <tr><th>認證文件檔名 (Certs)</th><td>${r.certs || '（未提供）'}</td></tr>
+        <tr><th>備註說明 (Notes)</th><td>${r.note || '—'}</td></tr>
+      </table>
+    `;
 
-    // 標題
-    doc.setFillColor(15, 26, 46);
-    doc.rect(0, 0, pageW, 20, 'F');
-    doc.setTextColor(245, 158, 11);
-    doc.setFontSize(13);
-    doc.text('Explosion-Proof Equipment Declaration', pageW / 2, 9, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setTextColor(180, 180, 180);
-    doc.text('防爆電氣設備申報表', pageW / 2, 16, { align: 'center' });
-
-    let y = 28;
-    doc.setTextColor(30, 30, 30);
-    const fields = [
-      ['Record No.',    `#${r.序號}`],
-      ['Unit / Dept.',  `${r.組別} ${r.課別}`],
-      ['Equipment Zone', r.設備區域],
-      ['Equipment Name', r.設備名稱],
-      ['Purchased After 2015?', r['104年後購置']],
-      ['Zone Classification Compliance', r.符合法令],
-      ['Photo Files',   r.照片檔名 || '（未提供）'],
-      ['Cert Files',    r.文件檔名 || '（未提供）'],
-      ['Notes',         r.備註 || '—'],
-      ['Submission Time', r.申報時間],
-    ];
-    doc.autoTable({
-      startY: y,
-      head: [['欄位 Field', '內容 Content']],
-      body: fields,
-      margin: { left: margin, right: margin },
-      headStyles: {
-        fillColor: [245, 158, 11], textColor: [0, 0, 0], fontStyle: 'bold',
-      },
-      alternateRowStyles: { fillColor: [248, 249, 252] },
-      styles: { fontSize: 10, cellPadding: 4 },
-      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 65 }, 1: { cellWidth: 'auto' } },
-    });
-    // 照片預覽（最多 3 張）
+    // 處理圖片預覽顯示
     const photos = r.photoFiles || [];
     if (photos.length > 0) {
-      let imgY = doc.lastAutoTable.finalY + 8;
-      doc.setFontSize(9); doc.setTextColor(100);
-      doc.text('設備現場照片 On-site Photos:', margin, imgY);
-      imgY += 5;
-      let imgX = margin;
+      html += `<div class="img-container">`;
       for (let p = 0; p < Math.min(photos.length, 3); p++) {
-        try {
-          const b64 = await toBase64(photos[p].file);
-          const ext = photos[p].file.type.includes('png') ? 'PNG' : 'JPEG';
-          doc.addImage('data:' + photos[p].file.type + ';base64,' + b64, ext, imgX, imgY, 50, 38);
-          imgX += 54;
-        } catch (_) {}
+         try {
+           const b64 = await toBase64(photos[p].file);
+           html += `<img src="data:${photos[p].file.type};base64,${b64}" />`;
+         } catch(e) {}
       }
+      html += `</div>`;
     }
-
-    // 頁碼
-    const total = data.length;
-    doc.setFontSize(8); doc.setTextColor(160);
-    doc.text(`Page ${i + 1} / ${total}  |  ${new Date().toLocaleDateString('zh-TW')}`,
-             pageW - margin, 293, { align: 'right' });
+    html += `</div>`;
   }
 
+  html += `</body></html>`;
   hideOverlay();
-  doc.save(`防爆電氣設備申報表_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.pdf`);
-  showStatus('✅ PDF 已下載', 'success');
-}
 
+  // 開啟新視窗並自動呼叫列印
+  const printWin = window.open('', '_blank');
+  printWin.document.write(html);
+  printWin.document.close();
+  
+  // 等待資源載入後觸發列印 (使用者可選擇另存為 PDF)
+  setTimeout(() => {
+    printWin.focus();
+    printWin.print();
+    showStatus('✅ 報表已生成，請在對話框中選擇「另存為 PDF」', 'success');
+  }, 500);
+}
 // ─────────────────────────────────────────────
 // 清除表單
 // ─────────────────────────────────────────────
