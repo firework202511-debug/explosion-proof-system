@@ -495,7 +495,7 @@
       <div class="form-row full">
         <div class="field" id="f-class">
           <label>設備區域劃分等級 <span class="req">*</span></label>
-          <select id="area">
+          <select id="class">
             <option value="">── 設備區域劃分等級 ──</option>
             <option value="Zone 0（連續危險區）">Zone 0（連續危險區）</option>
             <option value="Zone 1（一般危險區）">Zone 1（一般危險區）</option>
@@ -751,7 +751,7 @@ function validate() {
     { id: 'f-group', val: () => document.getElementById('group').value, msg: '請選擇組別' },
     { id: 'f-dept',  val: () => document.getElementById('dept').value,  msg: '請選擇課別' },
     { id: 'f-area',  val: () => document.getElementById('area').value,  msg: '請選擇設備區域' },
-    { id: 'f-area',  val: () => document.getElementById('class').value,  msg: '請選擇設備區域劃分等級' },
+    { id: 'f-class', val: () => document.getElementById('class').value, msg: '請選擇設備區域劃分等級' },
     { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
     { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
     { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
