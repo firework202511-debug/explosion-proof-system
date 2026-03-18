@@ -766,8 +766,7 @@ function validate() {
     { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
     { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
     { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
-    { id: 'f-photo', val: () => fileStore.photo.length > 0 ? 'ok' : '', msg: '請上傳設備現場照片' },
-    { id: 'f-cert',  val: () => fileStore.cert.length > 0  ? 'ok' : '', msg: '請上傳認證文件' },
+    { id: 'f-photo', val: () => fileStore.photo.length > 0 ? 'ok' : '', msg: '請上傳設備現場照片' }
   ];
   checks.forEach(c => {
     const wrap = document.getElementById(c.id);
