@@ -866,7 +866,7 @@ async function submitAll() {
       return {
         序號: idx + 1,
         組別: r.group, 課別: r.dept,
-        設備區域: r.area,區劃等級: r.class, 設備名稱: r.equip,
+        設備區域: r.area,區劃等級: r.zoneLevel, 設備名稱: r.equip,
         '104年後購置': r.year, 符合法令: r.law,
         備註: r.note, 申報時間: r.ts,
         照片檔名: r.photos, 文件檔名: r.certs,
@@ -962,7 +962,7 @@ async function exportPDF() {
       <table>
         <tr><th>申報單位 (Unit/Dept)</th><td>${r.group} - ${r.dept}</td></tr>
         <tr><th>設備區域 (Zone)</th><td>${r.area}</td></tr>
-        <tr><th>設備區劃等級 (Class)</th><td>${r.class}</td></tr>
+        <tr><th>設備區劃等級 (Class)</th><td>${r.zoneLevel}</td></tr>
         <tr><th>設備名稱 (Equipment)</th><td>${r.equip}</td></tr>
         <tr><th>104年後購置 (After 2015)</th><td>${r.year}</td></tr>
         <tr><th>法令符合性 (Compliance)</th><td>${r.law}</td></tr>
@@ -1015,7 +1015,7 @@ function clearForm() {
   document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
   fileStore.photo = []; fileStore.cert = [];
   renderPreview('photo'); renderPreview('cert');
-  ['f-group','f-dept','f-area','f-equip','f-year','f-law','f-photo','f-cert']
+  ['f-group','f-dept','f-area','f-zoneLevel','f-equip','f-year','f-law','f-photo','f-cert']
     .forEach(id => document.getElementById(id).classList.remove('has-error'));
 }
 
