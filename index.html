@@ -476,7 +476,27 @@
         <div class="field" id="f-area">
           <label>設備區域 <span class="req">*</span></label>
           <select id="area">
-            <option value="">── 請選擇設備區域 ──</option>
+            <option value="">── 設備區域 ──</option>
+            <option value="液氨儲槽區">液氨儲槽區</option>
+            <option value="氫氣室">氫氣室</option>
+            <option value="GT圍阻體氣渦輪區">GT圍阻體氣渦輪區</option>
+            <option value="計量站">計量站</option>
+            <option value="80/90減壓站">80/90減壓站</option>
+            <option value="混氫區">混氫區</option>
+            <option value="其他一般區域（非危險區，請於備註說明）">一般區域（非危險區）</option>
+          </select>
+          <div class="err-msg">請選擇設備區域</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-section">
+      <div class="section-title">03 · 設備區域劃分等級</div>
+      <div class="form-row full">
+        <div class="field" id="f-class">
+          <label>設備區域劃分等級 <span class="req">*</span></label>
+          <select id="area">
+            <option value="">── 設備區域劃分等級 ──</option>
             <option value="Zone 0（連續危險區）">Zone 0（連續危險區）</option>
             <option value="Zone 1（一般危險區）">Zone 1（一般危險區）</option>
             <option value="Zone 2（非正常危險區）">Zone 2（非正常危險區）</option>
@@ -491,7 +511,7 @@
     </div>
 
     <div class="form-section">
-      <div class="section-title">03 · 設備名稱</div>
+      <div class="section-title">04 · 設備名稱</div>
       <div class="form-row full">
         <div class="field" id="f-equip">
           <label>設備名稱 <span class="req">*</span></label>
@@ -502,7 +522,7 @@
     </div>
 
     <div class="form-section">
-      <div class="section-title">04 · 購置年度確認</div>
+      <div class="section-title">05 · 購置年度確認</div>
       <div class="form-row full">
         <div class="field" id="f-year">
           <label>設備是否於民國 104 年以後購置？ <span class="req">*</span></label>
@@ -522,7 +542,7 @@
     </div>
 
     <div class="form-section">
-      <div class="section-title">05 · 法令符合性</div>
+      <div class="section-title">06 · 法令符合性</div>
       <div class="form-row full">
         <div class="field" id="f-law">
           <label>設備是否符合區劃等級法令要求？ <span class="req">*</span></label>
@@ -546,7 +566,7 @@
     </div>
 
     <div class="form-section">
-      <div class="section-title">06 · 設備現場照片</div>
+      <div class="section-title">07 · 設備現場照片</div>
       <div class="form-row full">
         <div class="field" id="f-photo">
           <label>請上傳設備現場照片 <span class="req">*</span></label>
@@ -569,10 +589,10 @@
     </div>
 
     <div class="form-section">
-      <div class="section-title">07 · 認證文件</div>
+      <div class="section-title">08 · 認證文件</div>
       <div class="form-row full">
         <div class="field" id="f-cert">
-          <label>請上傳設備 TS 認證證明或其他證明文件 <span class="req">*</span></label>
+          <label>請上傳設備 TS 認證證明或其他證明文件 </span></label>
           <div class="upload-zone" id="cert-zone"
                ondragover="handleDrag(event,'cert-zone')"
                ondragleave="removeDrag('cert-zone')"
@@ -639,11 +659,11 @@ const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwVOvf_-PbUNTg
 // 課別對應
 // ─────────────────────────────────────────────
 const DEPT_MAP = {
-  "電氣一組": ["第一課","第二課","第三課"],
-  "儀資一組": ["第四課","第五課","第六課"],
-  "儀資二組":   ["機械課","電儀課","管線課"],
-  "修配組":["安全課","環保課"],
-  "鍋爐組":   ["工程課","設施課"],
+  "電氣一組": ["電器一課","電機一課","電器二課","電機二課","變電一課","變電二課","電氣課"],
+  "儀資一組": ["儀資一課","儀資二課","儀資六課"],
+  "儀資二組": ["複儀一課","複儀二課","複儀三課","複儀四課","複儀五課","複儀六課"],
+  "修配組":["共設二課","共設一課"],
+  "鍋爐組":["鍋爐主機課","鍋爐輔機課","排煙脫硫課","煤灰處理課","廢熱鍋爐課"],
 };
 
 function updateUnit() {
@@ -731,6 +751,7 @@ function validate() {
     { id: 'f-group', val: () => document.getElementById('group').value, msg: '請選擇組別' },
     { id: 'f-dept',  val: () => document.getElementById('dept').value,  msg: '請選擇課別' },
     { id: 'f-area',  val: () => document.getElementById('area').value,  msg: '請選擇設備區域' },
+    { id: 'f-area',  val: () => document.getElementById('class').value,  msg: '請選擇設備區域劃分等級' },
     { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
     { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
     { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
@@ -757,6 +778,7 @@ function collectForm() {
     group:  document.getElementById('group').value,
     dept:   document.getElementById('dept').value,
     area:   document.getElementById('area').value,
+    class:  document.getElementById('class').value,
     equip:  document.getElementById('equip').value.trim(),
     year:   getRadio('year'),
     law:    getRadio('law'),
@@ -844,7 +866,7 @@ async function submitAll() {
       return {
         序號: idx + 1,
         組別: r.group, 課別: r.dept,
-        設備區域: r.area, 設備名稱: r.equip,
+        設備區域: r.area,區劃等級: r.class, 設備名稱: r.equip,
         '104年後購置': r.year, 符合法令: r.law,
         備註: r.note, 申報時間: r.ts,
         照片檔名: r.photos, 文件檔名: r.certs,
@@ -940,6 +962,7 @@ async function exportPDF() {
       <table>
         <tr><th>申報單位 (Unit/Dept)</th><td>${r.group} - ${r.dept}</td></tr>
         <tr><th>設備區域 (Zone)</th><td>${r.area}</td></tr>
+        <tr><th>設備區劃等級 (Class)</th><td>${r.class}</td></tr>
         <tr><th>設備名稱 (Equipment)</th><td>${r.equip}</td></tr>
         <tr><th>104年後購置 (After 2015)</th><td>${r.year}</td></tr>
         <tr><th>法令符合性 (Compliance)</th><td>${r.law}</td></tr>
