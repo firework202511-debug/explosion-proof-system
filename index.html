@@ -149,12 +149,23 @@
   }
   .pending-info { font-size: 13px; color: var(--text); }
   .pending-info span { color: var(--text-muted); margin: 0 6px; }
+  /* ── 暫存區按鈕群 ── */
+  .pending-actions {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .pending-edit {
+    background: none; border: none; color: var(--accent);
+    cursor: pointer; font-size: 15px; padding: 4px;
+    opacity: 0.7; transition: opacity 0.2s;
+  }
+  .pending-edit:hover { opacity: 1; transform: scale(1.1); }
+  
   .pending-remove {
     background: none; border: none; color: var(--danger);
-    cursor: pointer; font-size: 18px; padding: 4px 8px;
+    cursor: pointer; font-size: 18px; padding: 4px;
     opacity: 0.6; transition: opacity 0.2s;
   }
-  .pending-remove:hover { opacity: 1; }
+  .pending-remove:hover { opacity: 1; transform: scale(1.1); }
 
   /* ── FORM CARD ── */
   .form-card {
@@ -827,7 +838,10 @@ function renderPending() {
         <span>·</span>${r.equip}
         <span style="color:var(--text-muted);font-size:11px;margin-left:8px">${r.ts}</span>
       </div>
-      <button class="pending-remove" onclick="removePending(${i})">✕</button>
+      <div class="pending-actions">
+        <button class="pending-edit" onclick="editPending(${i})" title="修改本筆資料">✏️</button>
+        <button class="pending-remove" onclick="removePending(${i})" title="刪除本筆資料">✕</button>
+      </div>
     `;
     list.appendChild(card);
   });
@@ -839,9 +853,45 @@ function removePending(i) {
   updateRecordLabel();
 }
 
-function updateRecordLabel() {
-  document.getElementById('record-label').textContent =
-    `第 ${pendingRecords.length + 1} 筆`;
+// 新增：修改暫存資料的函式
+function editPending(i) {
+  // 取得要修改的資料
+  const r = pendingRecords[i];
+
+  // 1. 載入文字與下拉選單
+  document.getElementById('group').value = r.group;
+  updateUnit(); // 觸發連動，更新課別選單
+  document.getElementById('dept').value = r.dept;
+  document.getElementById('area').value = r.area;
+  document.getElementById('zoneLevel').value = r.zoneLevel;
+  document.getElementById('equip').value = r.equip;
+  document.getElementById('note').value = r.note;
+
+  // 2. 載入單選按鈕 (Radio)
+  document.querySelectorAll('input[name="year"]').forEach(el => el.checked = (el.value === r.year));
+  document.querySelectorAll('input[name="law"]').forEach(el => el.checked = (el.value === r.law));
+
+  // 3. 載入檔案 (恢復之前上傳的照片與文件狀態)
+  fileStore.photo = [...(r.photoFiles || [])];
+  fileStore.cert  = [...(r.certFiles || [])];
+  renderPreview('photo');
+  renderPreview('cert');
+
+  // 4. 清除可能殘留的錯誤紅框
+  ['f-group','f-dept','f-area','f-zoneLevel','f-equip','f-year','f-law','f-photo','f-cert']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('has-error');
+    });
+
+  // 5. 將此筆資料從暫存區抽出 (等待修改後重新存入)
+  pendingRecords.splice(i, 1);
+  renderPending();
+  updateRecordLabel();
+
+  // 6. 將畫面平滑滾動到表單區，並提示使用者
+  document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+  showStatus('✏️ 資料已載入表單，請修改完成後重新點選「繼續填寫」', 'info');
 }
 
 // ─────────────────────────────────────────────
