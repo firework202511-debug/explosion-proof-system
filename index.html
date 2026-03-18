@@ -580,7 +580,7 @@
       <div class="section-title">07 · 設備現場照片</div>
       <div class="form-row full">
         <div class="field" id="f-photo">
-          <label>請上傳設備現場照片 <span class="req">*</span></label>
+          <label>請上傳設備現場照片 </span></label>
           <div class="upload-zone" id="photo-zone"
                ondragover="handleDrag(event,'photo-zone')"
                ondragleave="removeDrag('photo-zone')"
@@ -765,8 +765,7 @@ function validate() {
     { id: 'f-zoneLevel', val: () => document.getElementById('zoneLevel').value, msg: '請選擇設備區域劃分等級' },
     { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
     { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
-    { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
-    { id: 'f-photo', val: () => fileStore.photo.length > 0 ? 'ok' : '', msg: '請上傳設備現場照片' }
+    { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' }
   ];
   checks.forEach(c => {
     const wrap = document.getElementById(c.id);
