@@ -493,9 +493,9 @@
     <div class="form-section">
       <div class="section-title">03 · 設備區域劃分等級</div>
       <div class="form-row full">
-        <div class="field" id="f-class">
+        <div class="field" id="f-zoneLevel">
           <label>設備區域劃分等級 <span class="req">*</span></label>
-          <select id="class">
+          <select id="zoneLevel">
             <option value="">── 設備區域劃分等級 ──</option>
             <option value="Zone 0（連續危險區）">Zone 0（連續危險區）</option>
             <option value="Zone 1（一般危險區）">Zone 1（一般危險區）</option>
@@ -751,7 +751,7 @@ function validate() {
     { id: 'f-group', val: () => document.getElementById('group').value, msg: '請選擇組別' },
     { id: 'f-dept',  val: () => document.getElementById('dept').value,  msg: '請選擇課別' },
     { id: 'f-area',  val: () => document.getElementById('area').value,  msg: '請選擇設備區域' },
-    { id: 'f-class', val: () => document.getElementById('class').value, msg: '請選擇設備區域劃分等級' },
+    { id: 'f-zoneLevel', val: () => document.getElementById('zoneLevel').value, msg: '請選擇設備區域劃分等級' },
     { id: 'f-equip', val: () => document.getElementById('equip').value.trim(), msg: '請輸入設備名稱' },
     { id: 'f-year',  val: () => getRadio('year'), msg: '請選擇購置年度' },
     { id: 'f-law',   val: () => getRadio('law'),  msg: '請選擇法令符合性' },
@@ -778,7 +778,7 @@ function collectForm() {
     group:  document.getElementById('group').value,
     dept:   document.getElementById('dept').value,
     area:   document.getElementById('area').value,
-    class:  document.getElementById('class').value,
+    zoneLevel:  document.getElementById('zoneLevel').value,
     equip:  document.getElementById('equip').value.trim(),
     year:   getRadio('year'),
     law:    getRadio('law'),
@@ -1006,7 +1006,7 @@ async function exportPDF() {
 // 清除表單
 // ─────────────────────────────────────────────
 function clearForm() {
-  ['group','dept','area','equip','note'].forEach(id => {
+  ['group','dept','area','zoneLevel','equip','note'].forEach(id => {
     const el = document.getElementById(id);
     if (el.tagName === 'SELECT') el.value = '';
     else el.value = '';
