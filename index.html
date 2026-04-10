@@ -957,6 +957,7 @@ async function buildPDF(fields, imageData) {
     for (const d of imgs) {
       checkY(imgH+4);
       try {
+        if (!d || !d.type || !d.type.startsWith('image/')) continue;
         doc.addImage(d.dataUrl, d.type.includes('png')?'PNG':'JPEG', M+col*(imgW+5), y, imgW, imgH);
       } catch(e) {}
       col++;
