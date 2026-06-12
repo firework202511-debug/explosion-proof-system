@@ -468,7 +468,11 @@
             <option value="儀資二組">儀資二組</option>
             <option value="修配組">修配組</option>
             <option value="鍋爐組">鍋爐組</option>
-             <option value="氣渦組">氣渦組</option>
+            <option value="氣渦組">氣渦組</option>
+            <option value="儀資三組">儀資三組</option>
+            <option value="電氣二組">電氣二組</option>
+            <option value="機械組">機械組</option> 
+            <option value="熱機組">熱機組</option>
           </select>
           <div class="err-msg">請選擇組別</div>
         </div>
@@ -495,6 +499,7 @@
             <option value="計量站">計量站</option>
             <option value="80/90減壓站">80/90減壓站</option>
             <option value="混氫區">混氫區</option>
+            <option value="新複循環機組(請於備註說明)">新複循環機組</option>
             <option value="其他一般區域（非危險區，請於備註說明）">一般區域（非危險區）</option>
           </select>
           <div class="err-msg">請選擇設備區域</div>
@@ -677,6 +682,10 @@ const DEPT_MAP = {
   "修配組":["共設二課","共設一課"],
   "鍋爐組":["鍋爐主機課","鍋爐輔機課","排煙脫硫課","煤灰處理課","廢熱鍋爐課"],
   "氣渦組":["氣渦一課","氣渦二課"],
+  "儀資三組":["儀資一課","儀資二課","儀資三課","儀資四課"],
+  "機械組":["共同設備課","廢熱鍋爐課","土木課","修配課"],
+  "熱機組":["熱機一課","熱機二課","熱機三課","熱機四課"],
+  "電氣二組":["電機課","電器課","變電課"],
 };
 
 function updateUnit() {
